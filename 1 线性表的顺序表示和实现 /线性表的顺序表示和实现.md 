@@ -1,0 +1,312 @@
+线性表中的顺序表的实现
+
+
+
+# 1 线性表结构
+主要是一个基地址，相当于一个指针，也可以设为一个数组，效果是一样的。
+
+
+```c
+typedef struct List
+{
+    ElemType *list; //存储空间基地址
+    int size;      //当前长度
+    int MaxSize;   //当前分配的存储容量
+} SeqList;
+
+```
+
+# 2 基本操作函数
+1. 初始化线性表
+```c
+void InitList(SeqList *sq)
+{ 
+    sq->list = (ElemType *)malloc(MAXSize*sizeo(ElemType));
+    sq->size = 0;
+    sq->MaxSize = MAXSize;
+}
+```
+
+2. 清除线性表
+```c
+void ClearList(SeqList *sq)
+{ 
+    sq->size = 0;   
+}
+```
+
+3. 求线性表长度
+```c
+int LengthList(SeqList *sq)
+{ 
+    return sq->size;
+}
+
+```
+4. 插入元素
+按给定条件pos向线性表插入一个元素
+问题就是插入后，后面的元素都要往后移，逆序移
+```c
+bool InsertList(SeqList *sq, ElemType item, int pos)
+{
+    int i;
+    if (sq->size == MAXSize)
+    {
+        return false; //  当元素个数已满时，返回0代表插入失败
+    }
+
+    for (i = sq->size; i > pos-1; --i)
+    {
+        sq->list[i] = sq->list[i - 1]; //  从第pos个数开始，每个数往后移动一个位置，注意必须逆序
+    }
+    sq->list[pos-1] = item; // 第pos个数变成item
+    sq->size++;    // 插入一个数，长度加1
+    return true;        // 插入成功返回1
+}
+```
+这里用枚举类型，让false代表0，true为1
+```c
+typedef enum
+{
+    false,
+    true
+} bool;
+```
+5. 找元素
+在线性表L中求序号为pos的元素，该元素作为函数值返回
+```c
+ElemType GetList(SeqList *sq, int pos)
+{ 
+    return sq->list[pos-1];
+}
+
+```
+
+
+6. 打印顺序表
+```c
+void printList(SeqList *sq)
+{
+    for (int i = 0; i < sq->size; i++)
+    {
+        printf("%d\t", sq->list[i]);
+    }   
+}
+```
+
+# 3 整体代码
+该程序分为两个文件，"SeqList.h"与"test1.c"            
+将数据结构类型定义（typedef）部分与基础操作函数放在头文件`SeqList.h  `          
+主函数以及其他部分放在`test1.c `中   
+
+## test1.c
+
+- 为检验代码可行性，设计main()函数验证
+- 功能：接收元素组成顺序表，打印顺序表，求和
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef int ElemType;
+#define MAXSize 10 
+
+#include "SeqList.h" //引用头文件
+
+int main(void)
+{
+    SeqList *myList = (SeqList *)malloc(sizeof(SeqList));
+    int i = 1, x, sum = 0, n;
+
+    InitList(myList);
+    printf("请输入顺序表（输入-1结束）:");
+    scanf("%d", &x);
+    while (x != -1)
+    {
+        if (InsertList(myList, x, i) == 0)
+        {
+            printf("错误!\n");
+            return 0;
+        }
+        i++;
+        scanf("%d", &x);
+    }
+
+    printList(myList);
+    printf("\n");
+
+    n = LengthList(myList);
+    for (i = 1; i <= n; i++)
+    {
+        x = GetList(myList, i);
+        sum += x;
+    }
+    printf("顺序表的和是%d\n", sum);
+
+    ClearList(myList);   
+    return 0;
+}
+```
+
+## SeqList.h
+```c
+typedef struct List
+{
+    ElemType *list; //存储空间基地址
+    int size;      //当前长度
+    int MaxSize;   //当前分配的存储容量
+} SeqList;
+
+typedef enum
+{
+    false,
+    true
+} bool;
+
+
+void InitList(SeqList *sq)
+{ //初始化线性表
+    sq->list = (ElemType *)malloc(MAXSize*sizeof(ElemType));
+    sq->size = 0;
+    sq->MaxSize = MAXSize;
+}
+
+void ClearList(SeqList *sq)
+{ //清除线性表
+    sq->size = 0;   
+}
+
+int LengthList(SeqList *sq)
+{ //求线性表长度
+    return sq->size;
+}
+
+bool InsertList(SeqList *sq, ElemType item, int pos)
+{//按给定条件pos向线性表插入一个元素
+    int i;
+    if (sq->size == MAXSize)
+    {
+        return false; //  当元素个数已满时，返回0代表插入失败
+    }
+
+    for (i = sq->size; i > pos-1; --i)
+    {
+        sq->list[i] = sq->list[i - 1]; //  从第pos个数开始，每个数往后移动一个位置，注意必须逆序
+    }
+    sq->list[pos-1] = item; // 第pos个数变成item
+    sq->size++;    // 插入一个数，长度加1
+    return true;        // 插入成功返回1
+}
+
+ElemType GetList(SeqList *sq, int pos)
+{ //在线性表L中求序号为pos的元素，该元素作为函数值返回
+    return sq->list[pos-1];
+}
+
+
+
+void printList(SeqList *sq)
+{
+    for (int i = 0; i < sq->size; i++)
+    {
+        printf("%d\t", sq->list[i]);
+    }
+    
+}
+```
+
+## 4 运行结果
+![图片1](../图片/图片1.png)
+
+## 5 附加题
+- 要求：编写函数`bool DeleteElem(SeqList *L, int min, int max)` 实现从顺序表中删除其值在给定值min和max之间（min < max）的所有元素，要求把该函数添加到文件`SeqList.h`中，并在主函数文件`test1.cp`中添加相应语句进行测试。
+- 依次遍历元素，若在范围内的，进行删除，每次删除后都会导致后面的元素全部前进，`注意是正序`
+- 将函数添加到`SeqList.h`中
+```c
+bool DeleteElem(SeqList *sq, int min, int max)
+{
+    if(min>=max)
+    {
+        printf("min>=max error");
+        return false;
+    }
+
+    for (int i = 0; i < sq->size; i++)
+    {
+        if (sq->list[i]>=min && sq->list[i]<=max)
+        {
+            for (int m = i; m < sq->size; m++)  //后面元素全部前进一个，注意是正序
+            {
+                sq->list[m] = sq->list[m+1];
+            }
+            sq->size--;
+            i--;
+        }
+            
+    }    
+    return true;    
+}
+```
+
+- 主函数
+  - test1.c添加附加部分
+  - 通过print函数检验是否删除成功
+  - 测试删除所有在3-7之间的元素
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef int ElemType;
+#define MAXSize 10
+
+#include "SeqList.h"
+
+int main(void)
+{
+    SeqList *myList = (SeqList *)malloc(sizeof(SeqList));
+    int i = 1, x, sum = 0, n, min, max;
+
+    InitList(myList);
+    printf("请输入顺序表（输入-1结束）:");
+    scanf("%d", &x);
+    while (x != -1)
+    {
+        if (InsertList(myList, x, i) == 0)
+        {
+            printf("错误!\n");
+            return 0;
+        }
+        i++;
+        scanf("%d", &x);
+    }
+
+    printList(myList);
+    printf("\n");
+
+    //附加部分
+    min = 3;
+    max = 7;
+    if (DeleteElem(myList, min, max) == 0)
+    {
+        printf("错误");
+        return 0;
+    }
+
+    printList(myList);
+    printf("\n");
+
+    // n = LengthList(myList);
+    // for (i = 1; i <= n; i++)
+    // {
+    //     x = GetList(myList, i);
+    //     sum += x;
+    // }
+    // printf("顺序表的和是%d\n", sum);
+
+    // ClearList(myList);
+
+    return 0;
+}
+```
+
+- 运行结果
+![图片2](../图片/图片2.png)
